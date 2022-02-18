@@ -17,6 +17,7 @@ class _CreatePermitState extends State<CreatePermit> {
   var token, userID, userName, userNIK;
   bool _isCurrentlyLoading = false;
   bool _isPermitCreated = false;
+  int permitCreatedID = 0;
 
   @override
   void initState() {
@@ -40,10 +41,11 @@ class _CreatePermitState extends State<CreatePermit> {
     });
   }
 
-  void permitCreated() {
+  void permitCreated(permitID) {
     setState(() {
       _isPermitCreated = true;
     });
+    permitCreatedID = permitID;
   }
 
   @override 
@@ -71,7 +73,10 @@ class _CreatePermitState extends State<CreatePermit> {
         );
       }
       else {
-        child = ViewPermit();
+        child = ViewPermit(
+          token: token,
+          permitID: permitCreatedID,
+        );
       }
     }
     return child;

@@ -28,9 +28,6 @@ class StartApp extends StatelessWidget {
       title: 'ePermits Sejati',
       theme: AppTheme.theme,
       home: CheckAuthentication(),
-      routes: {
-        '/view-permit': (context) => ViewPermit()
-      }
     );
   }
 }

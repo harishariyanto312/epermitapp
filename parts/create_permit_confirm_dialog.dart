@@ -45,10 +45,10 @@ class _CreatePermitConfirmDialogState extends State<CreatePermitConfirmDialog> {
               withToken: true
             );
             var body = jsonDecode(res.body);
-            print(res.body);
+            print(body);
 
             widget.toggleLoadingStatus();
-            widget.permitCreated();
+            widget.permitCreated(body['result']['permit_id']);
           },
           child: Text('Lanjutkan'),
         ),

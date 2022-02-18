@@ -32,18 +32,18 @@ class SanctumApi {
     );
   }
 
-  sendGet({data, apiURL, additionalHeaders, withToken = false}) async {
+  sendGet({apiURL, additionalHeaders, withToken = false}) async {
     var fullUrl = Uri.parse(_endpoint + apiURL);
     print('Sending GET request $fullUrl');
+    print(await this._getToken());
     return await http.get(
       fullUrl,
       headers: {
         ...{
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
         ...additionalHeaders,
-        if (withToken) 'Authorization': 'Bearer ' + this._getToken(),
+        if (withToken) 'Authorization': 'Bearer ' + await this._getToken(),
       }
     );
   }

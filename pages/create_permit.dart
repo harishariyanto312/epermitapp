@@ -74,7 +74,6 @@ class _CreatePermitState extends State<CreatePermit> {
       }
       else {
         child = ViewPermit(
-          token: token,
           permitID: permitCreatedID,
         );
       }

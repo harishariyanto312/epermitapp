@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 class SanctumApi {
-  final String _endpoint = 'http://10.0.2.2:8000/api/v1/';
-  // final String _endpoint = 'https://cdn.xxx.com/api/v1/';
+  // final String _endpoint = 'http://10.0.2.2:8000/api/v1/';
+  final String _endpoint = 'https://cdn.webtugas.com/api/v1/';
   var token;
 
   _getToken() async {

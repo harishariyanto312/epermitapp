@@ -106,7 +106,7 @@ class AppTheme {
 
     /// Floating Action Theme
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: Color(0xff3C4EC5),
+        backgroundColor: Color.fromARGB(255, 230, 33, 42),
         splashColor: Color(0xffeeeeee).withAlpha(100),
         highlightElevation: 8,
         elevation: 4,

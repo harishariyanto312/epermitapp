@@ -1,9 +1,25 @@
+import 'dart:convert';
+
+import 'package:epermits/pages/view_permit.dart';
 import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './login.dart';
 import './create_permit.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import '../network/sanctum_api.dart';
+
+getPermits({page = 1}) async {
+  var res = await SanctumApi().sendGet(
+    apiURL: 'permits?page=' + page.toString(),
+    additionalHeaders: {},
+    withToken: true
+  );
+  var body = jsonDecode(res.body);
+  return body;
+}
 
 class Home extends StatefulWidget {
   final Function() logoutHandler;
@@ -46,21 +62,150 @@ class _HomeState extends State<Home> {
     );
   }
 
-  createHandler() {
+  createHandler() async {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (BuildContext context) => CreatePermit()
       )
+    ).then((_) {
+      _pagingController.refresh();
+      setState(() {
+
+      });
+    });
+  }
+
+  final PagingController _pagingController = PagingController(firstPageKey: 1);
+
+  @override 
+  void initState() {
+    _pagingController.addPageRequestListener((pageKey) {
+      _fetchPage(pageKey);
+    });
+    super.initState();
+  }
+
+  _fetchPage(int pageKey) async {
+    try {
+      final getItems = await getPermits(page: pageKey);
+      final isLastPage = getItems['result']['meta']['is_last_page'];
+      if (isLastPage) {
+        _pagingController.appendLastPage(getItems['result']['data']);
+      }
+      else {
+        final nextPageKey = pageKey + 1;
+        _pagingController.appendPage(getItems['result']['data'], nextPageKey);
+      }
+    } catch (error) {
+      _pagingController.error = error;
+    }
+  }
+
+  loadingScreen() {
+    return Center(
+      child: SpinKitDoubleBounce(
+        color: AppTheme.theme.colorScheme.primary,
+        size: 50,
+      ),
+    );
+  }
+
+  mainScreen() {
+    return PagedListView.separated(
+      pagingController: _pagingController,
+      separatorBuilder: (context, index) => Divider(
+        height: 0.5,
+        color: AppTheme.theme.dividerColor,
+      ),
+      builderDelegate: PagedChildBuilderDelegate(
+        itemBuilder: (context, item, index) {
+          Map<String, dynamic> data = item as Map<String, dynamic>;
+          // return Text(item.toString());
+          return InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) => ViewPermit(permitID: data['id']),
+                ),
+              );
+            },
+            child: ListTile(
+              title: FxText.b1(
+                'Izin Keluar #' + data['id'].toString(),
+                fontWeight: 600,
+                color: AppTheme.theme.colorScheme.onBackground,
+              ),
+            ),
+          );
+        },
+        firstPageProgressIndicatorBuilder: (_) => Center(
+          child: SpinKitDoubleBounce(
+            color: AppTheme.theme.colorScheme.primary,
+            size: 50,
+          ),
+        ),
+        newPageProgressIndicatorBuilder: (_) => Container(
+          padding: EdgeInsets.only(top: 16),
+          child: Center(
+            child: SpinKitDoubleBounce(
+              color: AppTheme.theme.colorScheme.primary,
+              size: 50,
+            ),
+          ),
+        ),
+        noItemsFoundIndicatorBuilder: (_) => emptyItems(),
+      ),
+    );
+  }
+
+  // <a href="https://storyset.com/work">Work illustrations by Storyset</a>
+  emptyItems() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            child: Image(
+              image: AssetImage('./assets/images/empty.png'),
+              height: MediaQuery.of(context).size.width * 0.6,
+              width: MediaQuery.of(context).size.width * 0.6,
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(top: 24),
+            child: FxText.sh1(
+              'Anda belum pernah membuat izin keluar',
+              color: AppTheme.theme.colorScheme.onBackground,
+              fontWeight: 600,
+              letterSpacing: 0,
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(top: 24),
+            child: FxButton(
+              backgroundColor: AppTheme.theme.colorScheme.primary,
+              elevation: 0,
+              borderRadiusAll: 4,
+              onPressed: createHandler,
+              child: FxText.b2(
+                'Buat Izin',
+                fontWeight: 600,
+                color: AppTheme.theme.colorScheme.onPrimary,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   @override 
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Text('Colossus'),
-      ),
+      body: mainScreen(),
       backgroundColor: AppTheme.customTheme.cardDark,
       appBar: AppBar(
         elevation: 0,
@@ -111,5 +256,11 @@ class _HomeState extends State<Home> {
         ],
       ),
     );
+  }
+
+  @override 
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
   }
 }

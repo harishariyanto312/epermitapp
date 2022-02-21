@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
@@ -8,6 +7,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../network/sanctum_api.dart';
 import 'package:badges/badges.dart';
+import './draw_signature.dart';
 
 getPermit(permitID) async {
   var res = await SanctumApi().sendGet(
@@ -31,11 +31,13 @@ class ViewPermit extends StatefulWidget {
 class _ViewPermitState extends State<ViewPermit> {
   var permitData;
   var isLoading = true;
+  var currentStatus;
 
   getPermitData() async {
     var tempPermitData = await getPermit(widget.permitID);
     setState(() {
       permitData = tempPermitData;
+      currentStatus = permitData['result']['permit']['status'];
       if (permitData != null) {
         isLoading = false;
       }
@@ -95,13 +97,27 @@ class _ViewPermitState extends State<ViewPermit> {
                             Expanded(
                               child: Column(
                                 children: <Widget>[
-                                  _QuickActionWidget(
+                                  currentStatus == 'PENDING'
+                                  ? _QuickActionWidget(
                                     iconData: MdiIcons.draw, 
                                     actionText: 'Tanda tangani',
-                                    actionClicked: () {
-                                      print('Tanda Tangani');
+                                    actionClicked: () async {
+                                      var permitID = permitData['result']['permit']['id'];
+                                      Navigator.pop(context);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => DrawSignature(
+                                          permitID: permitData['result']['permit']['id'],
+                                        )),
+                                      ).then((_) {
+                                        setState(() {
+                                          isLoading = true;
+                                        });
+                                        getPermitData();
+                                      });
                                     },
-                                  ),
+                                  )
+                                  : Container(),
                                   _QuickActionWidget(
                                     iconData: MdiIcons.filePdfBox, 
                                     actionText: 'Simpan PDF', 
@@ -115,13 +131,15 @@ class _ViewPermitState extends State<ViewPermit> {
                             Expanded(
                               child: Column(
                                 children: <Widget>[
-                                  _QuickActionWidget(
+                                  currentStatus == 'PENDING'
+                                  ? _QuickActionWidget(
                                     iconData: MdiIcons.send, 
                                     actionText: 'Kirim',
                                     actionClicked: () {
                                       print('Kirim');
                                     },
-                                  ),
+                                  )
+                                  : Container(),
                                 ],
                               ),
                             ),
@@ -230,6 +248,45 @@ class _ViewPermitState extends State<ViewPermit> {
           ),
         ),
 
+        Container(
+          color: AppTheme.theme.backgroundColor,
+          padding: FxSpacing.xy(24, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              infoTitle('Tanda Tangan Karyawan'),
+              Container(
+                padding: FxSpacing.only(top: 16, bottom: 8,),
+                child: Center(
+                  child: Image.network(permitData['result']['permit']['user_signature'], width: MediaQuery.of(context).size.width / 3,)
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        (currentStatus == 'READY'
+        ? Container(
+            color: AppTheme.theme.backgroundColor,
+            padding: FxSpacing.xy(24, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                infoTitle('Tanda Tangan Atasan'),
+                infoDetail('Nama', permitData['result']['permit']['superior']['name']),
+                infoDetail('NIK', permitData['result']['permit']['superior']['nik']),
+                Container(
+                  padding: FxSpacing.only(top: 16, bottom: 8,),
+                  child: Center(
+                    child: Image.network(permitData['result']['permit']['superior_signature'], width: MediaQuery.of(context).size.width / 3,)
+                  ),
+                ),
+              ],
+            ),
+          )
+        : Container(
+        )),
+
       ],
     );
   }
@@ -241,9 +298,19 @@ class _ViewPermitState extends State<ViewPermit> {
         child = Badge(
           toAnimate: false,
           shape: BadgeShape.square,
-          badgeColor: Colors.red,
+          badgeColor: Colors.yellow,
           borderRadius: BorderRadius.circular(8),
-          badgeContent: Text('Pending', style: TextStyle(color: Colors.white),),
+          badgeContent: Text('Menunggu TTD Atasan', style: TextStyle(color: Colors.black),),
+          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        );
+        break;
+      case 'READY':
+        child = Badge(
+          toAnimate: false,
+          shape: BadgeShape.square,
+          badgeColor: Colors.green,
+          borderRadius: BorderRadius.circular(8),
+          badgeContent: Text('Data Lengkap', style: TextStyle(color: Colors.white),),
           padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         );
         break;

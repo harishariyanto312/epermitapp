@@ -115,6 +115,8 @@ class _DrawSignatureState extends State<DrawSignature> {
     exportBackgroundColor: Colors.white,
   );
 
+  bool _isSaveButtonDisabled = false;
+
   _drawSignature() {
     return ListView(
       padding: FxSpacing.nTop(20),
@@ -190,17 +192,19 @@ class _DrawSignatureState extends State<DrawSignature> {
             ),
             child: ElevatedButton(
               onPressed: () async {
-                var userSignature = await _signatureController.toPngBytes();
-                bool isSaved = await _saveSignature(userSignature);
-                if (isSaved) {
-                  Navigator.pop(context);
+                if (!_isSaveButtonDisabled) {
+                  var userSignature = await _signatureController.toPngBytes();
+                  bool isSaved = await _saveSignature(userSignature);
+                  if (isSaved) {
+                    Navigator.pop(context);
+                  }
                 }
               },
               style: ButtonStyle(
                 padding: MaterialStateProperty.all(FxSpacing.xy(16, 0)),
               ),
               child: FxText.button(
-                'Simpan',
+                _isSaveButtonDisabled ? 'Menyimpan ...' : 'Simpan',
                 fontWeight: 700,
                 color: AppTheme.theme.colorScheme.onPrimary,
                 letterSpacing: 0.5,
@@ -214,6 +218,10 @@ class _DrawSignatureState extends State<DrawSignature> {
   }
 
   _saveSignature(userSignature) async {
+    setState(() {
+      _isSaveButtonDisabled = true;
+    });
+
     var dataSignature = {
       'superior_id': userID,
       'user_signature': base64Encode(userSignature),
@@ -226,6 +234,11 @@ class _DrawSignatureState extends State<DrawSignature> {
       withToken: true,
     );
     var body = jsonDecode(res.body);
+
+    setState(() {
+      _isSaveButtonDisabled = false;
+    });
+
     if (body['errors'] == null) {
       return true;
     }

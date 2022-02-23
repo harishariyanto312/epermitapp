@@ -40,7 +40,7 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
   final SignatureController _signatureController = SignatureController(
     penStrokeWidth: 5,
     penColor: Colors.black,
-    exportBackgroundColor: Colors.white,
+    exportBackgroundColor: Colors.transparent,
   );
 
   int _currentStep = 0;

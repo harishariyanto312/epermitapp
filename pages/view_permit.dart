@@ -8,6 +8,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../network/sanctum_api.dart';
 import 'package:badges/badges.dart';
 import './draw_signature.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 getPermit(permitID) async {
   var res = await SanctumApi().sendGet(
@@ -121,8 +122,9 @@ class _ViewPermitState extends State<ViewPermit> {
                                   _QuickActionWidget(
                                     iconData: MdiIcons.filePdfBox, 
                                     actionText: 'Simpan PDF', 
-                                    actionClicked: () {
-
+                                    actionClicked: () async {
+                                      var pdfURL = permitData['result']['permit']['pdf_url'];
+                                      if (!await launch(pdfURL)) throw 'Could not launch $pdfURL';
                                     }
                                   ),
                                 ],

@@ -112,7 +112,7 @@ class _DrawSignatureState extends State<DrawSignature> {
   final SignatureController _signatureController = SignatureController(
     penStrokeWidth: 5,
     penColor: Colors.black,
-    exportBackgroundColor: Colors.white,
+    exportBackgroundColor: Colors.transparent,
   );
 
   bool _isSaveButtonDisabled = false;

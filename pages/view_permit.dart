@@ -195,104 +195,6 @@ class _ViewPermitState extends State<ViewPermit> {
     );
   }
 
-  permitDetail() {
-    return ListView(
-      children: <Widget>[
-        Container(
-          padding: FxSpacing.xy(24, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  FxText.sh2('Status', fontWeight: 600,),
-                  // FxText.b1('Menunggu Tanda Tangan Atasan', fontWeight: 500,),
-                  statusBadge(permitData['result']['permit']['status']),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: <Widget>[
-                  FxText.sh2('Nomor', fontWeight: 600,),
-                  FxText.b1('#' + (permitData['result']['permit']['id']).toString()),
-                ],
-              ),
-            ],
-          ),
-        ),
-        /* Data Pribadi */
-        Container(
-          color: AppTheme.theme.backgroundColor,
-          padding: FxSpacing.xy(24, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              infoTitle('Data Pribadi'),
-              infoDetail('Nama', permitData['result']['permit']['user']['name']),
-              infoDetail('NIK', permitData['result']['permit']['user']['nik']),
-            ],
-          ),
-        ),
-        /* Detail Izin */
-        Container(
-          color: AppTheme.theme.backgroundColor,
-          padding: FxSpacing.xy(24, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              infoTitle('Detail Izin'),
-              infoDetail('Hari', permitData['result']['permit']['day']),
-              infoDetail('Tanggal', permitData['result']['permit']['date']),
-              infoDetail('Jam', permitData['result']['permit']['time']),
-              infoDetail('Alasan', permitData['result']['permit']['permit_excuse']),
-            ],
-          ),
-        ),
-
-        Container(
-          color: AppTheme.theme.backgroundColor,
-          padding: FxSpacing.xy(24, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              infoTitle('Tanda Tangan Karyawan'),
-              Container(
-                padding: FxSpacing.only(top: 16, bottom: 8,),
-                child: Center(
-                  child: Image.network(permitData['result']['permit']['user_signature'], width: MediaQuery.of(context).size.width / 3,)
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        (currentStatus == 'READY'
-        ? Container(
-            color: AppTheme.theme.backgroundColor,
-            padding: FxSpacing.xy(24, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                infoTitle('Tanda Tangan Atasan'),
-                infoDetail('Nama', permitData['result']['permit']['superior']['name']),
-                infoDetail('NIK', permitData['result']['permit']['superior']['nik']),
-                Container(
-                  padding: FxSpacing.only(top: 16, bottom: 8,),
-                  child: Center(
-                    child: Image.network(permitData['result']['permit']['superior_signature'], width: MediaQuery.of(context).size.width / 3,)
-                  ),
-                ),
-              ],
-            ),
-          )
-        : Container(
-        )),
-
-      ],
-    );
-  }
-
   List<bool> _dataExpansionPanel = [true, true, true, true];
 
   permitDetails() {
@@ -390,7 +292,7 @@ class _ViewPermitState extends State<ViewPermit> {
                       return Container(
                         padding: FxSpacing.all(16),
                         child: FxText.sh1(
-                          'Identitas Karyawan',
+                          'Detail Izin',
                           fontWeight: isExpanded ? 700 : 600,
                           letterSpacing: 0,
                         ),
@@ -403,12 +305,12 @@ class _ViewPermitState extends State<ViewPermit> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           FxText.sh1(
-                            'Nama',
+                            'Hari',
                             fontWeight: 600,
                             height: 1.4,
                           ),
                           FxText.sh2(
-                            permitData['result']['permit']['user']['nik'],
+                            permitData['result']['permit']['day'],
                             height: 1.4,
                             fontWeight: 500,
                           ),
@@ -416,12 +318,38 @@ class _ViewPermitState extends State<ViewPermit> {
                             padding: EdgeInsets.only(top: 8),
                           ),
                           FxText.sh1(
-                            'NIK',
+                            'Tanggal',
                             fontWeight: 600,
                             height: 1.4,
                           ),
                           FxText.sh2(
-                            'B',
+                            permitData['result']['permit']['date'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(top: 8),
+                          ),
+                          FxText.sh1(
+                            'Jam',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            permitData['result']['permit']['time'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(top: 8),
+                          ),
+                          FxText.sh1(
+                            'Alasan',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            permitData['result']['permit']['permit_excuse'],
                             height: 1.4,
                             fontWeight: 500,
                           ),
@@ -430,6 +358,40 @@ class _ViewPermitState extends State<ViewPermit> {
                     ),
                     isExpanded: _dataExpansionPanel[1],
                   ),
+
+                  // Tanda Tangan Karyawan
+                  ExpansionPanel(
+                    canTapOnHeader: true,
+                    headerBuilder: (BuildContext context, bool isExpanded) {
+                      return Container(
+                        padding: FxSpacing.all(16),
+                        child: FxText.sh1(
+                          'Tanda Tangan Karyawan',
+                          fontWeight: isExpanded ? 700 : 600,
+                          letterSpacing: 0,
+                        ),
+                      );
+                    },
+                    body: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: FxSpacing.fromLTRB(24, 0, 24, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Container(
+                            padding: FxSpacing.only(top: 16, bottom: 8,),
+                            child: Center(
+                              child: Image.network(permitData['result']['permit']['user_signature'], width: MediaQuery.of(context).size.width / 2,)
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    isExpanded: _dataExpansionPanel[2],
+                  ),
+
+                  ..._superiorSignature(),
+
                 ],
               ),
             ],
@@ -437,6 +399,68 @@ class _ViewPermitState extends State<ViewPermit> {
         ),
       ],
     );
+  }
+
+  List<ExpansionPanel> _superiorSignature() {
+    if (currentStatus == 'READY') {
+      return <ExpansionPanel>[
+        ExpansionPanel(
+          canTapOnHeader: true,
+          headerBuilder: (BuildContext context, bool isExpanded) {
+            return Container(
+              padding: FxSpacing.all(16),
+              child: FxText.sh1(
+                'Tanda Tangan Atasan',
+                fontWeight: isExpanded ? 700 : 600,
+                letterSpacing: 0,
+              ),
+            );
+          },
+          body: Container(
+            width: MediaQuery.of(context).size.width,
+            padding: FxSpacing.fromLTRB(24, 0, 24, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                FxText.sh1(
+                  'Nama',
+                  fontWeight: 600,
+                  height: 1.4,
+                ),
+                FxText.sh2(
+                  permitData['result']['permit']['superior']['name'],
+                  height: 1.4,
+                  fontWeight: 500,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 8),
+                ),
+                FxText.sh1(
+                  'NIK',
+                  fontWeight: 600,
+                  height: 1.4,
+                ),
+                FxText.sh2(
+                  permitData['result']['permit']['superior']['nik'],
+                  height: 1.4,
+                  fontWeight: 500,
+                ),
+                Container(
+                  padding: FxSpacing.only(top: 16, bottom: 8,),
+                  child: Center(
+                    child: Image.network(permitData['result']['permit']['superior_signature'], width: MediaQuery.of(context).size.width / 2,)
+                  ),
+                ),
+              ],
+            ),
+          ),
+          isExpanded: _dataExpansionPanel[3],
+        ),
+      ];
+    }
+    else {
+      return <ExpansionPanel>[];
+    }
   }
 
   statusBadge(status) {

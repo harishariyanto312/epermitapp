@@ -1,15 +1,11 @@
-import 'dart:convert';
-import 'dart:typed_data';
 import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:signature/signature.dart';
 import 'package:intl/intl.dart';
 import './create_permit_confirm_dialog.dart';
-import 'dart:io';
-import '../pages/view_permit.dart';
+import 'dart:async';
 
 class CreatePermitStepper extends StatefulWidget {
   var token, userID, userName, userNIK;
@@ -49,7 +45,6 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
   // var currentTime = new DateTime.now();
   var currentTime = new DateTime.now();
   var currentTimePlusOneHour = new DateTime.now().add(new Duration(hours: 1));
-  var formatter = new DateFormat('dd/MM/yyyy');
 
   var submittedData;
 
@@ -59,8 +54,33 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
   final fieldControllerTimeTo = TextEditingController();
   final fieldControllerPermitExcuse = TextEditingController();
 
-  @override
-  void initState() {
+  DateTime fieldDateFromDefaultDate = DateTime.now();
+  fieldDateFromChanger(newValue) {
+    setState(() {
+      fieldDateFromDefaultDate = newValue;
+    });
+  }
+
+  DateTime fieldDateToDefaultDate = DateTime.now();
+  fieldDateToChanger(newValue) {
+    setState(() {
+      fieldDateToDefaultDate = newValue;
+    });
+  }
+
+  Future<Null> _fieldSelectDate(BuildContext context, fieldController, defaultValue, defaultValueChanger) async {
+    var picked = await showDatePicker(
+      context: context,
+      initialDate: defaultValue,
+      firstDate: DateTime(2022, 1),
+      lastDate: DateTime(2030, 12),
+    );
+    if (picked != null && picked != defaultValue) {
+      defaultValueChanger(picked);
+      setState(() {
+        fieldController.value = TextEditingValue(text: new DateFormat('dd/MM/yyyy').format(picked));
+      });
+    }
   }
 
   @override 
@@ -178,7 +198,6 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
                   });
 
                   if (step1Active && step2Active && step3Active && step4Active && step5Active) {
-                    // print(_signatureController.points);
                     submittedData = {
                       'user_id': widget.userID,
                       'date_from': fieldControllerDateFrom.text,
@@ -193,14 +212,6 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
                       submittedData: submittedData,
                       permitCreated: widget.permitCreated
                     ));
-
-                    /*
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (BuildContext context) => ViewPermit()
-                      ),
-                    );
-                    */
                   }
                 }
                 else {
@@ -278,25 +289,30 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
                     children: [
                       Container(
                         // margin: EdgeInsets.only(top: 8),
-                        child: TextFormField(
-                          controller: fieldControllerDateFrom,
-                          decoration: InputDecoration(
-                            labelText: 'Tanggal Keluar',
-                            hintText: 'DD/MM/YYYY',
-                            border: AppTheme.theme.inputDecorationTheme.border,
-                            enabledBorder: AppTheme.theme.inputDecorationTheme.border,
-                            focusedBorder: AppTheme.theme.inputDecorationTheme.focusedBorder,
-                            prefixIcon: Icon(
-                              MdiIcons.calendarBlankOutline,
-                              size: 24,
+                        child: GestureDetector(
+                          onTap: () => _fieldSelectDate(context, fieldControllerDateFrom, fieldDateFromDefaultDate, fieldDateFromChanger),
+                          child: AbsorbPointer(
+                            child: TextFormField(
+                              controller: fieldControllerDateFrom,
+                              decoration: InputDecoration(
+                                labelText: 'Tanggal Keluar',
+                                hintText: 'DD/MM/YYYY',
+                                border: AppTheme.theme.inputDecorationTheme.border,
+                                enabledBorder: AppTheme.theme.inputDecorationTheme.border,
+                                focusedBorder: AppTheme.theme.inputDecorationTheme.focusedBorder,
+                                prefixIcon: Icon(
+                                  MdiIcons.calendarBlankOutline,
+                                  size: 24,
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Tanggal keluar tidak boleh kosong';
+                                }
+                                return null;
+                              },
                             ),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Tanggal keluar tidak boleh kosong';
-                            }
-                            return null;
-                          },
                         ),
                       ),
                       Container(
@@ -334,17 +350,22 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
                   children: <Widget>[
                     Container(
                       // margin: EdgeInsets.only(top: 8),
-                      child: TextFormField(
-                        controller: fieldControllerDateTo,
-                        decoration: InputDecoration(
-                          labelText: 'Tanggal Kembali',
-                          hintText: 'DD/MM/YYYY',
-                          border: AppTheme.theme.inputDecorationTheme.border,
-                          enabledBorder: AppTheme.theme.inputDecorationTheme.border,
-                          focusedBorder: AppTheme.theme.inputDecorationTheme.focusedBorder,
-                          prefixIcon: Icon(
-                            MdiIcons.calendarBlankOutline,
-                            size: 24,
+                      child: GestureDetector(
+                        onTap: () => _fieldSelectDate(context, fieldControllerDateTo, fieldDateToDefaultDate, fieldDateToChanger),
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            controller: fieldControllerDateTo,
+                            decoration: InputDecoration(
+                              labelText: 'Tanggal Kembali',
+                              hintText: 'DD/MM/YYYY',
+                              border: AppTheme.theme.inputDecorationTheme.border,
+                              enabledBorder: AppTheme.theme.inputDecorationTheme.border,
+                              focusedBorder: AppTheme.theme.inputDecorationTheme.focusedBorder,
+                              prefixIcon: Icon(
+                                MdiIcons.calendarBlankOutline,
+                                size: 24,
+                              ),
+                            ),
                           ),
                         ),
                       ),

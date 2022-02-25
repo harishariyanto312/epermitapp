@@ -182,7 +182,7 @@ class _ViewPermitState extends State<ViewPermit> {
           color: AppTheme.theme.colorScheme.onPrimary,
         ),
       ),
-      body: isLoading ? showSpinner() : permitDetail(),
+      body: isLoading ? showSpinner() : permitDetails(),
     );
   }
 
@@ -289,6 +289,152 @@ class _ViewPermitState extends State<ViewPermit> {
         : Container(
         )),
 
+      ],
+    );
+  }
+
+  List<bool> _dataExpansionPanel = [true, true, true, true];
+
+  permitDetails() {
+    return ListView(
+      children: <Widget>[
+        Container(
+          padding: FxSpacing.xy(24, 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  FxText.sh2('Status', fontWeight: 600,),
+                  statusBadge(permitData['result']['permit']['status']),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  FxText.sh2('Nomor', fontWeight: 600,),
+                  FxText.b1('#' + (permitData['result']['permit']['id']).toString()),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Container(
+          color: AppTheme.theme.backgroundColor,
+          padding: FxSpacing.all(16),
+          child: Column(
+            children: <Widget>[
+              ExpansionPanelList(
+                expandedHeaderPadding: EdgeInsets.all(0),
+                expansionCallback: (int index, bool isExpanded) {
+                  setState(() {
+                    _dataExpansionPanel[index] = !isExpanded;
+                  });
+                },
+                animationDuration: Duration(milliseconds: 500),
+                children: <ExpansionPanel>[
+
+                  // Identitas Karyawan
+                  ExpansionPanel(
+                    canTapOnHeader: true,
+                    headerBuilder: (BuildContext context, bool isExpanded) {
+                      return Container(
+                        padding: FxSpacing.all(16),
+                        child: FxText.sh1(
+                          'Identitas Karyawan',
+                          fontWeight: isExpanded ? 700 : 600,
+                          letterSpacing: 0,
+                        ),
+                      );
+                    },
+                    body: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: FxSpacing.fromLTRB(24, 0, 24, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          FxText.sh1(
+                            'Nama',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            permitData['result']['permit']['user']['name'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(top: 8),
+                          ),
+                          FxText.sh1(
+                            'NIK',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            permitData['result']['permit']['user']['nik'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
+                        ],
+                      ),
+                    ),
+                    isExpanded: _dataExpansionPanel[0],
+                  ),
+
+                  // Detail
+                  ExpansionPanel(
+                    canTapOnHeader: true,
+                    headerBuilder: (BuildContext context, bool isExpanded) {
+                      return Container(
+                        padding: FxSpacing.all(16),
+                        child: FxText.sh1(
+                          'Identitas Karyawan',
+                          fontWeight: isExpanded ? 700 : 600,
+                          letterSpacing: 0,
+                        ),
+                      );
+                    },
+                    body: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: FxSpacing.fromLTRB(24, 0, 24, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          FxText.sh1(
+                            'Nama',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            permitData['result']['permit']['user']['nik'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(top: 8),
+                          ),
+                          FxText.sh1(
+                            'NIK',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            'B',
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
+                        ],
+                      ),
+                    ),
+                    isExpanded: _dataExpansionPanel[1],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

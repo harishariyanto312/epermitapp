@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
@@ -7,6 +6,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import '../network/sanctum_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signature/signature.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class DrawSignature extends StatefulWidget {
   var permitID;
@@ -23,6 +23,7 @@ class _DrawSignatureState extends State<DrawSignature> {
   final _formKey = GlobalKey<FormState>();
   var userNik, userName, userID, currentNik;
   var fieldNikErrorText = null;
+  bool _selectFromSuggestion = false;
 
   bool isBtnDisabled = false;
 
@@ -35,8 +36,9 @@ class _DrawSignatureState extends State<DrawSignature> {
   initState() {
     super.initState();
     _getCurrentNik();
-    print(widget.permitID);
   }
+
+  final TextEditingController _fieldSuperiorController = TextEditingController();
 
   _findSuperior() {
     return Form(
@@ -45,8 +47,13 @@ class _DrawSignatureState extends State<DrawSignature> {
         padding: FxSpacing.nTop(20),
         children: <Widget>[
           Container(
-            margin: EdgeInsets.only(top: 8),
-            child: TextFormField(
+            alignment: Alignment.center,
+            margin: EdgeInsets.only(top: 16),
+            padding: EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 12),
+            child: FxText.sh1('Masukkan NIK atau nama atasan', fontWeight: 600,),
+          ),
+          TypeAheadFormField(
+            textFieldConfiguration: TextFieldConfiguration(
               decoration: InputDecoration(
                 labelText: "NIK Atasan",
                 border: AppTheme.theme.inputDecorationTheme.border,
@@ -58,20 +65,68 @@ class _DrawSignatureState extends State<DrawSignature> {
                 ),
                 errorText: fieldNikErrorText,
               ),
-              validator: (value) {
+              controller: this._fieldSuperiorController,
+            ),
+            suggestionsCallback: (pattern) async {
+              var res = await SanctumApi().sendGet(
+                apiURL: 'users?q=' + pattern,
+                additionalHeaders: {},
+                withToken: true,
+              );
+              var data = jsonDecode(res.body);
+              if (data['errors'] == null) {
+                return data['result'];
+              }
+              else {
+                return [];
+              }
+            },
+            itemBuilder: (context, suggestion) {
+              final itemData = suggestion as Map;
+              return ListTile(
+                title: Text(itemData['name']),
+                subtitle: Text(suggestion['nik']),
+              );
+            },
+            transitionBuilder: (context, suggestionBox, controller) {
+              return suggestionBox;
+            },
+            onSuggestionSelected: (suggestion) {
+              final selectedData = suggestion as Map;
+              _selectFromSuggestion = true;
+              userNik = suggestion['nik'];
+              this._fieldSuperiorController.text = selectedData['name'] + ' (' + selectedData['nik'] + ')';
+            },
+            validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'NIK tidak boleh kosong';
                 }
-                userNik = value;
+                if (_selectFromSuggestion == false) {
+                  userNik = value;
+                }
                 if (userNik == currentNik) {
                   return 'NIK tidak valid';
                 }
                 return null;
-              },
+            },
+            onSaved: (value) {
+            },
+            suggestionsBoxDecoration: SuggestionsBoxDecoration(
+              color: Colors.white,
             ),
+            noItemsFoundBuilder: (BuildContext context) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                child: Text(
+                  'NIK/Nama tidak ditemukan',
+                  textAlign: TextAlign.center,
+                ),
+              );
+            },
           ),
+
           Container(
-            margin: EdgeInsets.only(top: 16),
+            margin: EdgeInsets.only(top: 8),
             alignment: Alignment.center,
             child: Container(
               decoration: BoxDecoration(
@@ -96,7 +151,7 @@ class _DrawSignatureState extends State<DrawSignature> {
                   padding: MaterialStateProperty.all(FxSpacing.xy(16, 0)),
                 ),
                 child: FxText.button(
-                  isBtnDisabled ? 'Mencari ...' : 'Temukan',
+                  isBtnDisabled ? 'MEMPROSES ...' : 'BERIKUTNYA',
                   fontWeight: 700,
                   color: AppTheme.theme.colorScheme.onPrimary,
                   letterSpacing: 0.5,
@@ -193,10 +248,24 @@ class _DrawSignatureState extends State<DrawSignature> {
             child: ElevatedButton(
               onPressed: () async {
                 if (!_isSaveButtonDisabled) {
-                  var userSignature = await _signatureController.toPngBytes();
-                  bool isSaved = await _saveSignature(userSignature);
-                  if (isSaved) {
-                    Navigator.pop(context);
+                  if (_signatureController.isNotEmpty) {
+                    var userSignature = await _signatureController.toPngBytes();
+                    bool isSaved = await _saveSignature(userSignature);
+                    if (isSaved) {
+                      Navigator.pop(context);
+                    }
+                  }
+                  else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: FxText.sh1(
+                          'Tanda tangan harus diisi',
+                          color: AppTheme.theme.colorScheme.onPrimary,
+                        ),
+                        backgroundColor: AppTheme.theme.colorScheme.primary,
+                        behavior: SnackBarBehavior.floating,
+                      )
+                    );
                   }
                 }
               },
@@ -204,7 +273,7 @@ class _DrawSignatureState extends State<DrawSignature> {
                 padding: MaterialStateProperty.all(FxSpacing.xy(16, 0)),
               ),
               child: FxText.button(
-                _isSaveButtonDisabled ? 'Menyimpan ...' : 'Simpan',
+                _isSaveButtonDisabled ? 'MENYIMPAN ...' : 'SIMPAN',
                 fontWeight: 700,
                 color: AppTheme.theme.colorScheme.onPrimary,
                 letterSpacing: 0.5,
@@ -273,7 +342,7 @@ class _DrawSignatureState extends State<DrawSignature> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: AppTheme.theme.colorScheme.background,
-        title: FxText.sh1('Tanda Tangan', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary,),
+        title: FxText.sh1('Tanda Tangan Atasan', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary,),
         iconTheme: IconThemeData(
           color: AppTheme.theme.colorScheme.onPrimary,
         ),
@@ -298,19 +367,37 @@ class _DrawSignatureState extends State<DrawSignature> {
     if (data['errors'] == null) {
       userName = data['result']['user']['name'];
       userID = data['result']['user']['id'];
-      setState(() {
-        fieldNikErrorText = null;
-        isSuperiorFound = true;
-      });
+
+      var resCheck = await SanctumApi().sendGet(
+        apiURL: 'permits/' + widget.permitID.toString() + '/check-give-signature?user_id=' + userID.toString(),
+        additionalHeaders: {},
+        withToken: true
+      );
+      var dataCheck = jsonDecode(resCheck.body);
+      if (dataCheck['errors'] == null) {
+        setState(() {
+          fieldNikErrorText = null;
+          isSuperiorFound = true;
+        });
+      }
+      else {
+        setState(() {
+          fieldNikErrorText = dataCheck['message'];
+          isSuperiorFound = false;
+        });
+      }
+
     }
     else {
       setState(() {
         fieldNikErrorText = data['message'];
+        isSuperiorFound = false;
       });
     }
 
     setState(() {
       isBtnDisabled = false;
     });
+    _selectFromSuggestion = false;
   }
 }

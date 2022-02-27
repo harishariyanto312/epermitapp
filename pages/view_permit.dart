@@ -9,6 +9,7 @@ import '../network/sanctum_api.dart';
 import 'package:badges/badges.dart';
 import './draw_signature.dart';
 import 'package:url_launcher/url_launcher.dart';
+import './add_person.dart';
 
 getPermit(permitID) async {
   var res = await SanctumApi().sendGet(
@@ -33,12 +34,18 @@ class _ViewPermitState extends State<ViewPermit> {
   var permitData;
   var isLoading = true;
   var currentStatus;
+  var isShared;
+  var additionalUsers;
 
   getPermitData() async {
     var tempPermitData = await getPermit(widget.permitID);
     setState(() {
       permitData = tempPermitData;
       currentStatus = permitData['result']['permit']['status'];
+      isShared = permitData['result']['permit']['is_shared'];
+      additionalUsers = permitData['result']['permit']['additional_users'];
+      print(isShared);
+
       if (permitData != null) {
         isLoading = false;
       }
@@ -92,18 +99,37 @@ class _ViewPermitState extends State<ViewPermit> {
                                       getPermitData();
                                     },
                                   ),
+                                  currentStatus == 'PENDING' && isShared == false
+                                  ? _QuickActionWidget(
+                                      iconData: MdiIcons.accountPlus, 
+                                      actionText: 'Tambah Orang', 
+                                      actionClicked: () {
+                                        Navigator.pop(context);
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) => AddPerson(
+                                            permitID: widget.permitID,
+                                          )),
+                                        ).then((_) {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          getPermitData();
+                                        });
+                                      },
+                                    )
+                                  : Container(),
                                 ],
                               ),
                             ),
                             Expanded(
                               child: Column(
                                 children: <Widget>[
-                                  currentStatus == 'PENDING'
+                                  currentStatus == 'PENDING' && isShared == false
                                   ? _QuickActionWidget(
                                     iconData: MdiIcons.draw, 
                                     actionText: 'Tanda tangani',
                                     actionClicked: () async {
-                                      var permitID = permitData['result']['permit']['id'];
                                       Navigator.pop(context);
                                       Navigator.push(
                                         context,
@@ -133,7 +159,7 @@ class _ViewPermitState extends State<ViewPermit> {
                             Expanded(
                               child: Column(
                                 children: <Widget>[
-                                  currentStatus == 'PENDING'
+                                  currentStatus == 'PENDING' && isShared == false
                                   ? _QuickActionWidget(
                                     iconData: MdiIcons.send, 
                                     actionText: 'Kirim',
@@ -196,6 +222,34 @@ class _ViewPermitState extends State<ViewPermit> {
   }
 
   List<bool> _dataExpansionPanel = [true, true, true, true];
+
+  List<Widget> _additionalUsersNames() {
+    var names = <Widget>[];
+    for (var item in additionalUsers) {
+      names.add(
+        FxText.sh2(
+          item['name'],
+          height: 1.4,
+          fontWeight: 500,
+        )
+      );
+    }
+    return names;
+  }
+
+  List<Widget> _additionalUsersNiks() {
+    var niks = <Widget>[];
+    for (var item in additionalUsers) {
+      niks.add(
+        FxText.sh2(
+          item['nik'],
+          height: 1.4,
+          fontWeight: 500,
+        )
+      );
+    }
+    return niks;
+  }
 
   permitDetails() {
     return ListView(
@@ -266,6 +320,7 @@ class _ViewPermitState extends State<ViewPermit> {
                             height: 1.4,
                             fontWeight: 500,
                           ),
+                          ..._additionalUsersNames(),
                           Padding(
                             padding: EdgeInsets.only(top: 8),
                           ),
@@ -279,6 +334,7 @@ class _ViewPermitState extends State<ViewPermit> {
                             height: 1.4,
                             fontWeight: 500,
                           ),
+                          ..._additionalUsersNiks(),
                         ],
                       ),
                     ),

@@ -18,11 +18,11 @@ class CreatePermitStepper extends StatefulWidget {
 }
 
 class _CreatePermitStepperState extends State<CreatePermitStepper> {
-  var step1State = StepState.editing;
-  var step2State = StepState.editing;
-  var step3State = StepState.editing;
-  var step4State = StepState.editing;
-  var step5State = StepState.editing;
+  var step1State = StepState.disabled;
+  var step2State = StepState.disabled;
+  var step3State = StepState.disabled;
+  var step4State = StepState.disabled;
+  var step5State = StepState.disabled;
 
   var step1Active = false;
   var step2Active = false;
@@ -75,10 +75,46 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
       firstDate: DateTime(2022, 1),
       lastDate: DateTime(2030, 12),
     );
-    if (picked != null && picked != defaultValue) {
+    if (picked != null) {
       defaultValueChanger(picked);
       setState(() {
         fieldController.value = TextEditingValue(text: new DateFormat('dd/MM/yyyy').format(picked));
+      });
+    }
+  }
+
+  TimeOfDay fieldTimeFromDefaultTime = TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: 0);
+  fieldTimeFromChanger(newValue) {
+    setState(() {
+      fieldTimeFromDefaultTime = newValue;
+    });
+  }
+
+  TimeOfDay fieldTimeToDefaultTime = TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: 0);
+  fieldTimeToChanger(newValue) {
+    setState(() {
+      fieldTimeToDefaultTime = newValue;
+    });
+  }
+
+  Future<Null> _fieldSelectTime(BuildContext context, fieldController, defaultValue, defaultValueChanger) async {
+    var picked = await showTimePicker(
+      context: context,
+      initialTime: defaultValue,
+      initialEntryMode: TimePickerEntryMode.input,
+      builder: (BuildContext context, Widget? child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      defaultValueChanger(picked);
+      setState(() {
+        final now = new DateTime.now();
+        final dateTime = new DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
+        fieldController.value = TextEditingValue(text: new DateFormat('HH:mm').format(dateTime));
       });
     }
   }
@@ -183,7 +219,7 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
                 }
                 else {
                   setState(() {
-                    step4State = StepState.editing;
+                    step4State = StepState.disabled;
                     step4Active = false;
                   });
                   return;
@@ -216,7 +252,7 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
                 }
                 else {
                   setState(() {
-                    step5State = StepState.editing;
+                    step5State = StepState.disabled;
                     step5Active = false;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -282,7 +318,7 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
               Step(
                 isActive: step2Active,
                 state: step2State,
-                title: FxText.sh1('Tanggal dan Jam Keluar', fontWeight: 600,),
+                title: FxText.sh1('Tanggal & Jam Keluar', fontWeight: 600,),
                 content: Form(
                   key: _step2FormKey,
                   child: Column(
@@ -316,25 +352,30 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
                         ),
                       ),
                       Container(
-                        child: TextFormField(
-                          controller: fieldControllerTimeFrom,
-                          decoration: InputDecoration(
-                            labelText: 'Jam Keluar',
-                            hintText: 'HH:MM',
-                            border: AppTheme.theme.inputDecorationTheme.border,
-                            enabledBorder: AppTheme.theme.inputDecorationTheme.border,
-                            focusedBorder: AppTheme.theme.inputDecorationTheme.focusedBorder,
-                            prefixIcon: Icon(
-                              MdiIcons.clock,
-                              size: 24,
+                        child: GestureDetector(
+                          onTap: () => _fieldSelectTime(context, fieldControllerTimeFrom, fieldTimeFromDefaultTime, fieldTimeFromChanger),
+                          child: AbsorbPointer(
+                            child: TextFormField(
+                              controller: fieldControllerTimeFrom,
+                              decoration: InputDecoration(
+                                labelText: 'Jam Keluar',
+                                hintText: 'HH:MM',
+                                border: AppTheme.theme.inputDecorationTheme.border,
+                                enabledBorder: AppTheme.theme.inputDecorationTheme.border,
+                                focusedBorder: AppTheme.theme.inputDecorationTheme.focusedBorder,
+                                prefixIcon: Icon(
+                                  MdiIcons.clock,
+                                  size: 24,
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Jam keluar tidak boleh kosong';
+                                }
+                                return null;
+                              },
                             ),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Jam keluar tidak boleh kosong';
-                            }
-                            return null;
-                          },
                         ),
                       ),
                 
@@ -345,7 +386,7 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
               Step(
                 isActive: step3Active,
                 state: step3State,
-                title: FxText.sh1('Tanggal dan Jam Kembali', fontWeight: 600,),
+                title: FxText.sh1('Tanggal & Jam Kembali (Opsional)', fontWeight: 600,),
                 content: Column(
                   children: <Widget>[
                     Container(
@@ -371,17 +412,22 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
                       ),
                     ),
                     Container(
-                      child: TextFormField(
-                        controller: fieldControllerTimeTo,
-                        decoration: InputDecoration(
-                          labelText: 'Jam Kembali',
-                          hintText: 'HH:MM',
-                          border: AppTheme.theme.inputDecorationTheme.border,
-                          enabledBorder: AppTheme.theme.inputDecorationTheme.border,
-                          focusedBorder: AppTheme.theme.inputDecorationTheme.focusedBorder,
-                          prefixIcon: Icon(
-                            MdiIcons.clock,
-                            size: 24,
+                      child: GestureDetector(
+                        onTap: () => _fieldSelectTime(context, fieldControllerTimeTo, fieldTimeToDefaultTime, fieldTimeToChanger),
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            controller: fieldControllerTimeTo,
+                            decoration: InputDecoration(
+                              labelText: 'Jam Kembali',
+                              hintText: 'HH:MM',
+                              border: AppTheme.theme.inputDecorationTheme.border,
+                              enabledBorder: AppTheme.theme.inputDecorationTheme.border,
+                              focusedBorder: AppTheme.theme.inputDecorationTheme.focusedBorder,
+                              prefixIcon: Icon(
+                                MdiIcons.clock,
+                                size: 24,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -467,7 +513,7 @@ class _CreatePermitStepperState extends State<CreatePermitStepper> {
                             onPressed: () {
                               setState(() {
                                 _signatureController.clear();
-                                step5State = StepState.editing;
+                                step5State = StepState.disabled;
                                 step5Active = false;
                               });
                             },

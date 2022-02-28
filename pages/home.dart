@@ -5,11 +5,11 @@ import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import './login.dart';
 import './create_permit.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import '../network/sanctum_api.dart';
+import './request_signature.dart';
 
 getPermits({page = 1}) async {
   var res = await SanctumApi().sendGet(
@@ -23,7 +23,8 @@ getPermits({page = 1}) async {
 
 class Home extends StatefulWidget {
   final Function() logoutHandler;
-  Home({required this.logoutHandler});
+  var deepLinkData;
+  Home({required this.logoutHandler, required this.deepLinkData});
 
   @override
   State<Home> createState() => _HomeState();
@@ -202,60 +203,86 @@ class _HomeState extends State<Home> {
     );
   }
 
+  bool isRequestSignature = false;
+
+  cancelRequestSignature() {
+    print('Canceled');
+    setState(() {
+      isRequestSignature = false;
+      widget.deepLinkData['action'] = null;
+    });
+  }
+
+  _setRoute() {
+    if (widget.deepLinkData['action'] == 'requestSignature') {
+      isRequestSignature = true;
+    }
+  }
+
   @override 
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: mainScreen(),
-      backgroundColor: AppTheme.customTheme.cardDark,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: AppTheme.theme.colorScheme.background,
-        title: FxText.sh1('ePermits Sejati', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary,),
-        actions: <Widget>[
-          PopupMenuButton(
-            color: AppTheme.customTheme.cardDark,
-            icon: Icon(
-              Icons.more_vert,
-              color: AppTheme.theme.colorScheme.onPrimary,
+    _setRoute();
+    if (isRequestSignature) {
+      var itemID = widget.deepLinkData['id'];
+      return RequestSignature(
+        cancelRequestSignature: cancelRequestSignature,
+        permitID: itemID == null ? '0' : itemID,
+      );
+    }
+    else {
+      return Scaffold(
+        body: mainScreen(),
+        backgroundColor: AppTheme.customTheme.cardDark,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: AppTheme.theme.colorScheme.background,
+          title: FxText.sh1('ePermits Sejati', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary,),
+          actions: <Widget>[
+            PopupMenuButton(
+              color: AppTheme.customTheme.cardDark,
+              icon: Icon(
+                Icons.more_vert,
+                color: AppTheme.theme.colorScheme.onPrimary,
+              ),
+              onSelected: (result) {
+                if (result == 0) {
+                  createHandler();
+                }
+                else if (result == 1) {
+                  logoutHandler();
+                }
+              },
+              itemBuilder: (BuildContext context) {
+                return [
+                  PopupMenuItem(
+                    // onTap: () => createHandler(context),
+                    value: 0,
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.create, size: 18,),
+                        FxSpacing.width(8),
+                        Text('Buat Izin'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    // onTap: logoutHandler,
+                    value: 1,
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.logout, size: 18,),
+                        FxSpacing.width(8),
+                        Text('Logout'),
+                      ],
+                    ),
+                  ),
+                ];
+              },
             ),
-            onSelected: (result) {
-              if (result == 0) {
-                createHandler();
-              }
-              else if (result == 1) {
-                logoutHandler();
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem(
-                  // onTap: () => createHandler(context),
-                  value: 0,
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.create, size: 18,),
-                      FxSpacing.width(8),
-                      Text('Buat Izin'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  // onTap: logoutHandler,
-                  value: 1,
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.logout, size: 18,),
-                      FxSpacing.width(8),
-                      Text('Logout'),
-                    ],
-                  ),
-                ),
-              ];
-            },
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    }
   }
 
   @override 

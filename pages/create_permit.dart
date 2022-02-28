@@ -6,7 +6,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:signature/signature.dart';
 import '../parts/create_permit_stepper.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import './view_permit.dart';
+import 'view_permit.dart';
 
 class CreatePermit extends StatefulWidget {
   @override

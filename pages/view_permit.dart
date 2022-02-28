@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../network/sanctum_api.dart';
-import 'package:badges/badges.dart';
 import './draw_signature.dart';
 import 'package:url_launcher/url_launcher.dart';
 import './add_person.dart';
+import '../parts/permit_panel.dart';
+import './show_qr.dart';
 
 getPermit(permitID) async {
   var res = await SanctumApi().sendGet(
@@ -168,6 +168,20 @@ class _ViewPermitState extends State<ViewPermit> {
                                     },
                                   )
                                   : Container(),
+
+                                  _QuickActionWidget(
+                                    iconData: MdiIcons.qrcode,
+                                    actionText: 'Kode QR',
+                                    actionClicked: () {
+                                      Navigator.pop(context);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => ShowQR(
+                                          permitID: permitData['result']['permit']['id'],
+                                        )),
+                                      );
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
@@ -208,7 +222,9 @@ class _ViewPermitState extends State<ViewPermit> {
           color: AppTheme.theme.colorScheme.onPrimary,
         ),
       ),
-      body: isLoading ? showSpinner() : permitDetails(),
+      body: isLoading ? showSpinner() : PermitPanel(
+        permitData: permitData['result']['permit'],
+      ),
     );
   }
 
@@ -219,341 +235,6 @@ class _ViewPermitState extends State<ViewPermit> {
         size: 50,
       ),
     );
-  }
-
-  List<bool> _dataExpansionPanel = [true, true, true, true];
-
-  List<Widget> _additionalUsersNames() {
-    var names = <Widget>[];
-    for (var item in additionalUsers) {
-      names.add(
-        FxText.sh2(
-          item['name'],
-          height: 1.4,
-          fontWeight: 500,
-        )
-      );
-    }
-    return names;
-  }
-
-  List<Widget> _additionalUsersNiks() {
-    var niks = <Widget>[];
-    for (var item in additionalUsers) {
-      niks.add(
-        FxText.sh2(
-          item['nik'],
-          height: 1.4,
-          fontWeight: 500,
-        )
-      );
-    }
-    return niks;
-  }
-
-  permitDetails() {
-    return ListView(
-      children: <Widget>[
-        Container(
-          padding: FxSpacing.xy(24, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  FxText.sh2('Status', fontWeight: 600,),
-                  statusBadge(permitData['result']['permit']['status']),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: <Widget>[
-                  FxText.sh2('Nomor', fontWeight: 600,),
-                  FxText.b1('#' + (permitData['result']['permit']['id']).toString()),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Container(
-          color: AppTheme.theme.backgroundColor,
-          padding: FxSpacing.all(16),
-          child: Column(
-            children: <Widget>[
-              ExpansionPanelList(
-                expandedHeaderPadding: EdgeInsets.all(0),
-                expansionCallback: (int index, bool isExpanded) {
-                  setState(() {
-                    _dataExpansionPanel[index] = !isExpanded;
-                  });
-                },
-                animationDuration: Duration(milliseconds: 500),
-                children: <ExpansionPanel>[
-
-                  // Identitas Karyawan
-                  ExpansionPanel(
-                    canTapOnHeader: true,
-                    headerBuilder: (BuildContext context, bool isExpanded) {
-                      return Container(
-                        padding: FxSpacing.all(16),
-                        child: FxText.sh1(
-                          'Identitas Karyawan',
-                          fontWeight: isExpanded ? 700 : 600,
-                          letterSpacing: 0,
-                        ),
-                      );
-                    },
-                    body: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: FxSpacing.fromLTRB(24, 0, 24, 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          FxText.sh1(
-                            'Nama',
-                            fontWeight: 600,
-                            height: 1.4,
-                          ),
-                          FxText.sh2(
-                            permitData['result']['permit']['user']['name'],
-                            height: 1.4,
-                            fontWeight: 500,
-                          ),
-                          ..._additionalUsersNames(),
-                          Padding(
-                            padding: EdgeInsets.only(top: 8),
-                          ),
-                          FxText.sh1(
-                            'NIK',
-                            fontWeight: 600,
-                            height: 1.4,
-                          ),
-                          FxText.sh2(
-                            permitData['result']['permit']['user']['nik'],
-                            height: 1.4,
-                            fontWeight: 500,
-                          ),
-                          ..._additionalUsersNiks(),
-                        ],
-                      ),
-                    ),
-                    isExpanded: _dataExpansionPanel[0],
-                  ),
-
-                  // Detail
-                  ExpansionPanel(
-                    canTapOnHeader: true,
-                    headerBuilder: (BuildContext context, bool isExpanded) {
-                      return Container(
-                        padding: FxSpacing.all(16),
-                        child: FxText.sh1(
-                          'Detail Izin',
-                          fontWeight: isExpanded ? 700 : 600,
-                          letterSpacing: 0,
-                        ),
-                      );
-                    },
-                    body: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: FxSpacing.fromLTRB(24, 0, 24, 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          FxText.sh1(
-                            'Hari',
-                            fontWeight: 600,
-                            height: 1.4,
-                          ),
-                          FxText.sh2(
-                            permitData['result']['permit']['day'],
-                            height: 1.4,
-                            fontWeight: 500,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(top: 8),
-                          ),
-                          FxText.sh1(
-                            'Tanggal',
-                            fontWeight: 600,
-                            height: 1.4,
-                          ),
-                          FxText.sh2(
-                            permitData['result']['permit']['date'],
-                            height: 1.4,
-                            fontWeight: 500,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(top: 8),
-                          ),
-                          FxText.sh1(
-                            'Jam',
-                            fontWeight: 600,
-                            height: 1.4,
-                          ),
-                          FxText.sh2(
-                            permitData['result']['permit']['time'],
-                            height: 1.4,
-                            fontWeight: 500,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(top: 8),
-                          ),
-                          FxText.sh1(
-                            'Alasan',
-                            fontWeight: 600,
-                            height: 1.4,
-                          ),
-                          FxText.sh2(
-                            permitData['result']['permit']['permit_excuse'],
-                            height: 1.4,
-                            fontWeight: 500,
-                          ),
-                        ],
-                      ),
-                    ),
-                    isExpanded: _dataExpansionPanel[1],
-                  ),
-
-                  // Tanda Tangan Karyawan
-                  ExpansionPanel(
-                    canTapOnHeader: true,
-                    headerBuilder: (BuildContext context, bool isExpanded) {
-                      return Container(
-                        padding: FxSpacing.all(16),
-                        child: FxText.sh1(
-                          'Tanda Tangan Karyawan',
-                          fontWeight: isExpanded ? 700 : 600,
-                          letterSpacing: 0,
-                        ),
-                      );
-                    },
-                    body: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: FxSpacing.fromLTRB(24, 0, 24, 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            padding: FxSpacing.only(top: 16, bottom: 8,),
-                            child: Center(
-                              child: Image.network(permitData['result']['permit']['user_signature'], width: MediaQuery.of(context).size.width / 2,)
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    isExpanded: _dataExpansionPanel[2],
-                  ),
-
-                  ..._superiorSignature(),
-
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<ExpansionPanel> _superiorSignature() {
-    if (currentStatus == 'READY') {
-      return <ExpansionPanel>[
-        ExpansionPanel(
-          canTapOnHeader: true,
-          headerBuilder: (BuildContext context, bool isExpanded) {
-            return Container(
-              padding: FxSpacing.all(16),
-              child: FxText.sh1(
-                'Tanda Tangan Atasan',
-                fontWeight: isExpanded ? 700 : 600,
-                letterSpacing: 0,
-              ),
-            );
-          },
-          body: Container(
-            width: MediaQuery.of(context).size.width,
-            padding: FxSpacing.fromLTRB(24, 0, 24, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                FxText.sh1(
-                  'Nama',
-                  fontWeight: 600,
-                  height: 1.4,
-                ),
-                FxText.sh2(
-                  permitData['result']['permit']['superior']['name'],
-                  height: 1.4,
-                  fontWeight: 500,
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 8),
-                ),
-                FxText.sh1(
-                  'NIK',
-                  fontWeight: 600,
-                  height: 1.4,
-                ),
-                FxText.sh2(
-                  permitData['result']['permit']['superior']['nik'],
-                  height: 1.4,
-                  fontWeight: 500,
-                ),
-                Container(
-                  padding: FxSpacing.only(top: 16, bottom: 8,),
-                  child: Center(
-                    child: Image.network(permitData['result']['permit']['superior_signature'], width: MediaQuery.of(context).size.width / 2,)
-                  ),
-                ),
-              ],
-            ),
-          ),
-          isExpanded: _dataExpansionPanel[3],
-        ),
-      ];
-    }
-    else {
-      return <ExpansionPanel>[];
-    }
-  }
-
-  statusBadge(status) {
-    var child;
-    switch (status) {
-      case 'PENDING':
-        child = Badge(
-          toAnimate: false,
-          shape: BadgeShape.square,
-          badgeColor: Colors.yellow,
-          borderRadius: BorderRadius.circular(8),
-          badgeContent: Text('Menunggu TTD Atasan', style: TextStyle(color: Colors.black),),
-          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        );
-        break;
-      case 'READY':
-        child = Badge(
-          toAnimate: false,
-          shape: BadgeShape.square,
-          badgeColor: Colors.green,
-          borderRadius: BorderRadius.circular(8),
-          badgeContent: Text('Data Lengkap', style: TextStyle(color: Colors.white),),
-          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        );
-        break;
-      default:
-        child = Badge(
-          toAnimate: false,
-          shape: BadgeShape.square,
-          badgeColor: Colors.red,
-          borderRadius: BorderRadius.circular(8),
-          badgeContent: Text('ERROR', style: TextStyle(color: Colors.white),),
-          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        );
-        break;
-    }
-    return child;
   }
 
   infoTitle(str) {

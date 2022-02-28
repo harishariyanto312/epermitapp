@@ -1,4 +1,3 @@
-import 'package:epermits/pages/view_permit.dart';
 import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';

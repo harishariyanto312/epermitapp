@@ -25,6 +25,7 @@ class _LoginState extends State<Login> {
   var fieldNikErrorText = null;
   var fieldPasswordErrorText = null;
   final _formKey = GlobalKey<FormState>();
+  var securityID = '3';
 
   @override 
   Widget build(BuildContext context) {
@@ -220,6 +221,16 @@ class _LoginState extends State<Login> {
       localStorage.setString('userID', (body['result']['user']['id']).toString());
       localStorage.setString('userName', body['result']['user']['name']);
       localStorage.setString('userNIK', body['result']['user']['nik']);
+
+      if (body['result']['user']['group_id'].toString() == securityID) {
+        localStorage.setBool('isSecurity', true);
+      }
+      else {
+        localStorage.setBool('isSecurity', false);
+      }
+
+      print('LOGIN');
+      print(body['result']['user']['group_id'].toString() == securityID);
 
       /*
       Navigator.pushReplacement(

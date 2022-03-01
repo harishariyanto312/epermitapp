@@ -236,7 +236,7 @@ class _HomeState extends State<Home> {
         appBar: AppBar(
           elevation: 0,
           backgroundColor: AppTheme.theme.colorScheme.background,
-          title: FxText.sh1('ePermits Sejati', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary,),
+          title: FxText.sh1('Exit Permits', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary,),
           actions: <Widget>[
             PopupMenuButton(
               color: AppTheme.customTheme.cardDark,

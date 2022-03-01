@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './pages/login.dart';
 import './pages/home.dart';
+import './pages/home_security.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppHttpOverrides extends HttpOverrides {
   @override 
@@ -42,6 +44,7 @@ class CheckAuthentication extends StatefulWidget {
 
 class _CheckAuthenticationState extends State<CheckAuthentication> {
   bool isAuthenticated = false;
+  bool? isUserSecurity = false;
 
   Uri? _initialUri;
   Uri? _latestUri;
@@ -53,6 +56,7 @@ class _CheckAuthenticationState extends State<CheckAuthentication> {
   void initState() {
     super.initState();
     _checkIfAuthenticated();
+    _checkIfUserSecurity();
     _handleIncomingLinks();
     _handleInitialUri();
   }
@@ -111,6 +115,13 @@ class _CheckAuthenticationState extends State<CheckAuthentication> {
     }
   }
 
+  void _checkIfUserSecurity() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    setState(() {
+      isUserSecurity = localStorage.getBool('isSecurity');
+    });
+  }
+
   void _checkIfAuthenticated() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     var token = localStorage.getString('token');
@@ -127,6 +138,7 @@ class _CheckAuthenticationState extends State<CheckAuthentication> {
     setState(() {
       isAuthenticated = true;
     });
+    _checkIfUserSecurity();
   }
 
   void logoutHandler() {
@@ -140,18 +152,25 @@ class _CheckAuthenticationState extends State<CheckAuthentication> {
     Widget child;
 
     if (isAuthenticated) {
-      var queryParamsFormatted = {};
-      var queryParams = _unifiedUri?.queryParametersAll.entries.toList();
-      if (queryParams != null) {
-        for (final item in queryParams) {
-          queryParamsFormatted[item.key] = item.value.join('');
-        }
+      if (isUserSecurity!) {
+        child = HomeSecurity(
+          logoutHandler: logoutHandler
+        );
       }
-      print(queryParamsFormatted);
-      child = Home(
-        logoutHandler: logoutHandler,
-        deepLinkData: queryParamsFormatted,
-      );
+      else {
+        var queryParamsFormatted = {};
+        var queryParams = _unifiedUri?.queryParametersAll.entries.toList();
+        if (queryParams != null) {
+          for (final item in queryParams) {
+            queryParamsFormatted[item.key] = item.value.join('');
+          }
+        }
+        print(queryParamsFormatted);
+        child = Home(
+          logoutHandler: logoutHandler,
+          deepLinkData: queryParamsFormatted,
+        );
+      }
     }
     else {
       child = Login(loginHandler: loginHandler);

@@ -32,12 +32,10 @@ class _ShowQRState extends State<ShowQR> {
               data: widget.permitID.toString(),
               version: QrVersions.auto,
               size: MediaQuery.of(context).size.width * 0.7,
-              embeddedImage: AssetImage('assets/images/logo-white.png'),
-              embeddedImageStyle: QrEmbeddedImageStyle(
-                size: Size(50, 50),
-              ),
               // backgroundColor: Color.fromARGB(255, 251, 209, 13),
-              foregroundColor: Color.fromARGB(255, 230, 33, 42),
+              backgroundColor: Color.fromARGB(255, 230, 33, 42),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.all(24),
             ),
             /*
             Container(

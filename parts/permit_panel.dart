@@ -195,7 +195,7 @@ class _PermitPanelState extends State<PermitPanel> {
   }
 
   List<ExpansionPanel> _superiorSignature() {
-    if (widget.permitData['status'] == 'READY') {
+    if (widget.permitData['status'] == 'READY' || widget.permitData['status'] == 'CHECKED') {
       return <ExpansionPanel>[
         ExpansionPanel(
           canTapOnHeader: true,
@@ -260,6 +260,16 @@ class _PermitPanelState extends State<PermitPanel> {
           badgeColor: Colors.green,
           borderRadius: BorderRadius.circular(8),
           badgeContent: Text('Data Lengkap', style: TextStyle(color: Colors.white),),
+          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        );
+        break;
+      case 'CHECKED':
+        child = Badge(
+          toAnimate: false,
+          shape: BadgeShape.square,
+          badgeColor: Colors.blue,
+          borderRadius: BorderRadius.circular(8),
+          badgeContent: Text('Sudah Dicek', style: TextStyle(color: Colors.white),),
           padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         );
         break;

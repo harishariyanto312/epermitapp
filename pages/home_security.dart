@@ -1,13 +1,16 @@
 import 'dart:convert';
 
+import 'package:epermits/pages/check_permit.dart';
 import 'package:epermits/pages/home.dart';
 import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutx/flutx.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import './scanner.dart';
 import '../network/sanctum_api.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../parts/security_drawer.dart';
 
 class HomeSecurity extends StatefulWidget {
   final Function() logoutHandler;
@@ -22,6 +25,36 @@ class _HomeSecurityState extends State<HomeSecurity> {
   final inputPermitID = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   var isLoading = false;
+
+  logoutHandler() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Logout'),
+          content: Text('Lanjutkan logout?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, 'Batal');
+              },
+              child: Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context, 'Logout');
+                await localStorage.remove('token');
+                widget.logoutHandler();
+              },
+              child: Text('Logout'),
+            ),
+          ],
+        );
+      }
+    );
+  }
 
   showSpinner() {
     return Center(
@@ -41,6 +74,9 @@ class _HomeSecurityState extends State<HomeSecurity> {
         elevation: 0,
         backgroundColor: AppTheme.theme.colorScheme.background,
         title: FxText.sh1('Exit Permits', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary,),
+        iconTheme: IconThemeData(
+          color: AppTheme.theme.colorScheme.onPrimary,
+        ),
         actions: <Widget>[
           PopupMenuButton(
             color: AppTheme.customTheme.cardDark,
@@ -71,6 +107,9 @@ class _HomeSecurityState extends State<HomeSecurity> {
         ],
       ),
       body: isLoading ? showSpinner() : _securityMainScreen(),
+      drawer: SecurityDrawer(
+        logoutHandler: this.logoutHandler,
+      ),
     );
   }
 
@@ -143,11 +182,19 @@ class _HomeSecurityState extends State<HomeSecurity> {
   _generateFab() {
     return FloatingActionButton.extended(
       onPressed: () async {
+        /*
         var result = await Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => Scanner()),
         );
-        if (result != null) {
+        */
+        String result = await FlutterBarcodeScanner.scanBarcode(
+          '#FFFFFF',
+          'Kembali',
+          true,
+          ScanMode.QR
+        );
+        if (!result.isEmpty && result != '-1') {
           setState(() {
             isLoading = true;
           });
@@ -155,15 +202,18 @@ class _HomeSecurityState extends State<HomeSecurity> {
           var permitID = result;
           var permitData = await _getPermit(permitID);
 
-          setState(() {
-            isLoading = false;
-          });
-
           if (permitData['errors'] == null) {
-            print('OK Found');
+            _permitFound(permitData['result']['permit']);
           }
           else {
-            _showDialog();
+            setState(() {
+              isLoading = false;
+            });
+            _showDialog(
+              MdiIcons.fileQuestion,
+              'Izin Keluar Tidak Ditemukan!',
+              'Periksa kembali nomor surat izin keluar',
+            );
           }
         }
       },
@@ -197,20 +247,23 @@ class _HomeSecurityState extends State<HomeSecurity> {
       var permitID = inputPermitID.text;
       var permitData = await _getPermit(permitID);
 
-      setState(() {
-        isLoading = false;
-      });
-
       if (permitData['errors'] == null) {
-        print('OK Found');
+        _permitFound(permitData['result']['permit']);
       }
       else {
-        _showDialog();
+        setState(() {
+          isLoading = false;
+        });
+        _showDialog(
+          MdiIcons.fileQuestion,
+          'Izin Keluar Tidak Ditemukan!',
+          'Periksa kembali nomor surat izin keluar',
+        );
       }
     }
   }
 
-  _showDialog() {
+  _showDialog(icon, dialogTitle, dialogCaption) {
     showDialog(
       context: context, 
       builder: (BuildContext context) {
@@ -236,7 +289,7 @@ class _HomeSecurityState extends State<HomeSecurity> {
                 Container(
                   child: Center(
                     child: Icon(
-                      MdiIcons.fileQuestion,
+                      icon,
                       size: 40,
                       color: AppTheme.theme.colorScheme.onBackground.withAlpha(220),
                     ),
@@ -245,14 +298,14 @@ class _HomeSecurityState extends State<HomeSecurity> {
                 Container(
                   margin: EdgeInsets.only(top: 16),
                   child: Center(
-                    child: FxText.sh1('Izin Keluar Tidak Ditemukan!', fontWeight: 700,),
+                    child: FxText.sh1(dialogTitle, fontWeight: 700,),
                   ),
                 ),
                 Container(
                   margin: EdgeInsets.only(top: 16),
                   child: Center(
                     child: FxText.caption(
-                      'Periksa kembali nomor surat izin keluar',
+                      dialogCaption,
                       fontWeight: 500,
                     ),
                   ),
@@ -282,5 +335,42 @@ class _HomeSecurityState extends State<HomeSecurity> {
         );
       },
     );
+  }
+
+  _permitFound(permitData) async {
+    if (permitData['status'] == 'PENDING') {
+        setState(() {
+          isLoading = false;
+        });
+        _showDialog(
+          MdiIcons.closeOctagon,
+          'Izin Belum Mendapat TTD!',
+          'Surat izin keluar ini belum mendapat tanda tangan atasan',
+        );
+        return;
+    }
+    else if (permitData['status'] == 'READY') {
+      var res = await SanctumApi().sendGet(
+        apiURL: 'permits/' + permitData['id'].toString() + '/security-check',
+        additionalHeaders: {},
+        withToken: true,
+      );
+      setState(() {
+        isLoading = false;
+      });
+      var body = jsonDecode(res.body);
+      print(body);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => CheckPermit(
+          permitData: permitData,
+        )),
+      );
+      return;
+    }
+    setState(() {
+      isLoading = false;
+    });
+    return;
   }
 }

@@ -10,6 +10,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import '../network/sanctum_api.dart';
 import './request_signature.dart';
+import '../parts/regular_user_drawer.dart';
 
 getPermits({page = 1}) async {
   var res = await SanctumApi().sendGet(
@@ -33,15 +34,13 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   logoutHandler() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    var userName = localStorage.getString('userName');
-    var userNIK = localStorage.getString('userNIK');
     
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Logout'),
-          content: Text('Anda login menggunakan akun dengan nama ${userName} (NIK : ${userNIK}). Lanjutkan logout?'),
+          content: Text('Lanjutkan logout?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -237,6 +236,10 @@ class _HomeState extends State<Home> {
           elevation: 0,
           backgroundColor: AppTheme.theme.colorScheme.background,
           title: FxText.sh1('Exit Permits', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary,),
+          iconTheme: IconThemeData(
+            color: AppTheme.theme.colorScheme.onPrimary,
+          ),
+          /*
           actions: <Widget>[
             PopupMenuButton(
               color: AppTheme.customTheme.cardDark,
@@ -280,6 +283,11 @@ class _HomeState extends State<Home> {
               },
             ),
           ],
+          */
+        ),
+        drawer: RegularUserDrawer(
+          pageRefresher: _pagingController.refresh,
+          logoutHandler: this.logoutHandler,
         ),
       );
     }

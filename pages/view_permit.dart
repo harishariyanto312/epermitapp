@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import './add_person.dart';
 import '../parts/permit_panel.dart';
 import './show_qr.dart';
+import 'package:flutter_share/flutter_share.dart';
 
 getPermit(permitID) async {
   var res = await SanctumApi().sendGet(
@@ -44,7 +45,6 @@ class _ViewPermitState extends State<ViewPermit> {
       currentStatus = permitData['result']['permit']['status'];
       isShared = permitData['result']['permit']['is_shared'];
       additionalUsers = permitData['result']['permit']['additional_users'];
-      print(isShared);
 
       if (permitData != null) {
         isLoading = false;
@@ -163,8 +163,14 @@ class _ViewPermitState extends State<ViewPermit> {
                                   ? _QuickActionWidget(
                                     iconData: MdiIcons.send, 
                                     actionText: 'Kirim',
-                                    actionClicked: () {
-                                      print('Kirim');
+                                    actionClicked: () async {
+                                      Navigator.pop(context);
+                                      await FlutterShare.share(
+                                        title: 'Kirim Permintaan Tanda Tangan',
+                                        text: 'Permintaan TTD untuk Surat Izin Keluar',
+                                        linkUrl: permitData['result']['permit']['request_signature_url'],
+                                        chooserTitle: 'Kirim Permintaan Tanda Tangan',
+                                      );
                                     },
                                   )
                                   : Container(),
@@ -179,7 +185,9 @@ class _ViewPermitState extends State<ViewPermit> {
                                         MaterialPageRoute(builder: (context) => ShowQR(
                                           permitID: permitData['result']['permit']['id'],
                                         )),
-                                      );
+                                      ).then((_) {
+                                        getPermitData();
+                                      });
                                     },
                                   ),
                                 ],

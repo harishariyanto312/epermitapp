@@ -26,6 +26,7 @@ class _LoginState extends State<Login> {
   var fieldPasswordErrorText = null;
   final _formKey = GlobalKey<FormState>();
   var securityID = '3';
+  var hrdID = '4';
 
   @override 
   Widget build(BuildContext context) {
@@ -197,8 +198,6 @@ class _LoginState extends State<Login> {
     );
     var body = jsonDecode(res.body);
 
-    print(body);
-
     setState(() {
       if (body['errors'] != null && body['errors']['nik'] != null && body['errors']['nik'][0] != null) {
         fieldNikErrorText = body['errors']['nik'][0];
@@ -229,17 +228,13 @@ class _LoginState extends State<Login> {
         localStorage.setBool('isSecurity', false);
       }
 
-      print('LOGIN');
-      print(body['result']['user']['group_id'].toString() == securityID);
+      if (body['result']['user']['group_id'].toString() == hrdID) {
+        localStorage.setBool('isHrd', true);
+      }
+      else {
+        localStorage.setBool('isHrd', false);
+      }
 
-      /*
-      Navigator.pushReplacement(
-        context, 
-        MaterialPageRoute(
-          builder: (BuildContext context) => Home()
-        )
-      );
-      */
       widget.loginHandler();
     }
 

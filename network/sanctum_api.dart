@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SanctumApi {
   // final String _endpoint = 'http://10.0.2.2:8000/api/v1/';
   // final String _endpoint = 'https://epermits.webtugas.com/api/v1/';
-  final String _endpoint = 'https://2d4c-110-137-101-240.ngrok.io/api/v1/';
+  final String _endpoint = 'http://d879-110-137-103-92.ngrok.io/api/v1/';
   var token;
 
   _getToken() async {

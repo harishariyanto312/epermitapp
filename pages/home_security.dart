@@ -77,6 +77,7 @@ class _HomeSecurityState extends State<HomeSecurity> {
         iconTheme: IconThemeData(
           color: AppTheme.theme.colorScheme.onPrimary,
         ),
+        /*
         actions: <Widget>[
           PopupMenuButton(
             color: AppTheme.customTheme.cardDark,
@@ -105,6 +106,7 @@ class _HomeSecurityState extends State<HomeSecurity> {
             },
           ),
         ],
+        */
       ),
       body: isLoading ? showSpinner() : _securityMainScreen(),
       drawer: SecurityDrawer(

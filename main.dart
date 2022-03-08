@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import './pages/login.dart';
 import './pages/home.dart';
 import './pages/home_security.dart';
+import './pages/home_hrd.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -45,6 +46,7 @@ class CheckAuthentication extends StatefulWidget {
 class _CheckAuthenticationState extends State<CheckAuthentication> {
   bool isAuthenticated = false;
   bool? isUserSecurity = false;
+  bool? isUserHrd = false;
 
   Uri? _initialUri;
   Uri? _latestUri;
@@ -122,6 +124,13 @@ class _CheckAuthenticationState extends State<CheckAuthentication> {
     });
   }
 
+  void _checkIfUserHrd() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    setState(() {
+      isUserHrd = localStorage.getBool('isHrd');
+    });
+  }
+
   void _checkIfAuthenticated() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     var token = localStorage.getString('token');
@@ -139,6 +148,7 @@ class _CheckAuthenticationState extends State<CheckAuthentication> {
       isAuthenticated = true;
     });
     _checkIfUserSecurity();
+    _checkIfUserHrd();
   }
 
   void logoutHandler() {
@@ -154,6 +164,11 @@ class _CheckAuthenticationState extends State<CheckAuthentication> {
     if (isAuthenticated) {
       if (isUserSecurity!) {
         child = HomeSecurity(
+          logoutHandler: logoutHandler
+        );
+      }
+      else if (isUserHrd!) {
+        child = HomeHRD(
           logoutHandler: logoutHandler
         );
       }

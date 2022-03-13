@@ -102,15 +102,6 @@ class _HomeState extends State<Home> {
     }
   }
 
-  loadingScreen() {
-    return Center(
-      child: SpinKitDoubleBounce(
-        color: AppTheme.theme.colorScheme.primary,
-        size: 50,
-      ),
-    );
-  }
-
   mainScreen() {
     return PagedListView.separated(
       pagingController: _pagingController,

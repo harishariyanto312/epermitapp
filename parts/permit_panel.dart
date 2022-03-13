@@ -19,7 +19,11 @@ class _PermitPanelState extends State<PermitPanel> {
     var names = <Widget>[];
     for (var item in widget.permitData['additional_users']) {
       names.add(
-        FxText.sh2(item['name'], height: 1.4, fontWeight: 500,),
+        FxText.sh2(
+          item['name'],
+          height: 1.4,
+          fontWeight: 500,
+        ),
       );
     }
     return names;
@@ -28,14 +32,16 @@ class _PermitPanelState extends State<PermitPanel> {
   List<Widget> _additionalUsersNiks() {
     var niks = <Widget>[];
     for (var item in widget.permitData['additional_users']) {
-      niks.add(
-        FxText.sh2(item['nik'], height: 1.4, fontWeight: 500,)
-      );
+      niks.add(FxText.sh2(
+        item['nik'],
+        height: 1.4,
+        fontWeight: 500,
+      ));
     }
     return niks;
   }
 
-  @override 
+  @override
   Widget build(BuildContext context) {
     return ListView(
       children: <Widget>[
@@ -47,14 +53,20 @@ class _PermitPanelState extends State<PermitPanel> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  FxText.sh2('Status', fontWeight: 600,),
+                  FxText.sh2(
+                    'Status',
+                    fontWeight: 600,
+                  ),
                   statusBadge(widget.permitData['status']),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  FxText.sh2('Nomor', fontWeight: 600,),
+                  FxText.sh2(
+                    'Nomor',
+                    fontWeight: 600,
+                  ),
                   FxText.b1('#' + (widget.permitData['id'].toString())),
                 ],
               ),
@@ -75,7 +87,6 @@ class _PermitPanelState extends State<PermitPanel> {
                 },
                 animationDuration: Duration(milliseconds: 500),
                 children: <ExpansionPanel>[
-
                   // Identitas Karyawan
                   ExpansionPanel(
                     canTapOnHeader: true,
@@ -95,14 +106,30 @@ class _PermitPanelState extends State<PermitPanel> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          FxText.sh1('Nama', fontWeight: 600, height: 1.4,),
-                          FxText.sh2(widget.permitData['user']['name'], height: 1.4, fontWeight: 500,),
+                          FxText.sh1(
+                            'Nama',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            widget.permitData['user']['name'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
                           ..._additionalUsersNames(),
                           Padding(
                             padding: EdgeInsets.only(top: 8),
                           ),
-                          FxText.sh1('NIK', fontWeight: 600, height: 1.4,),
-                          FxText.sh2(widget.permitData['user']['nik'], height: 1.4, fontWeight: 500,),
+                          FxText.sh1(
+                            'NIK',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            widget.permitData['user']['nik'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
                           ..._additionalUsersNiks(),
                         ],
                       ),
@@ -129,23 +156,49 @@ class _PermitPanelState extends State<PermitPanel> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          FxText.sh1('Hari', fontWeight: 600, height: 1.4,),
-                          FxText.sh2(widget.permitData['day'], height: 1.4, fontWeight: 500,),
-                          Padding(
-                            padding: EdgeInsets.only(top: 8)
+                          FxText.sh1(
+                            'Hari',
+                            fontWeight: 600,
+                            height: 1.4,
                           ),
-                          FxText.sh1('Tanggal', fontWeight: 600, height: 1.4,),
-                          FxText.sh2(widget.permitData['date'], height: 1.4, fontWeight: 500,),
-                          Padding(
-                            padding: EdgeInsets.only(top: 8)
+                          FxText.sh2(
+                            widget.permitData['day'],
+                            height: 1.4,
+                            fontWeight: 500,
                           ),
-                          FxText.sh1('Jam', fontWeight: 600, height: 1.4,),
-                          FxText.sh2(widget.permitData['time'], height: 1.4, fontWeight: 500,),
-                          Padding(
-                            padding: EdgeInsets.only(top: 8)
+                          Padding(padding: EdgeInsets.only(top: 8)),
+                          FxText.sh1(
+                            'Tanggal',
+                            fontWeight: 600,
+                            height: 1.4,
                           ),
-                          FxText.sh1('Alasan', fontWeight: 600, height: 1.4,),
-                          FxText.sh2(widget.permitData['permit_excuse'], height: 1.4, fontWeight: 500,),
+                          FxText.sh2(
+                            widget.permitData['date'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
+                          Padding(padding: EdgeInsets.only(top: 8)),
+                          FxText.sh1(
+                            'Jam',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            widget.permitData['time'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
+                          Padding(padding: EdgeInsets.only(top: 8)),
+                          FxText.sh1(
+                            'Alasan',
+                            fontWeight: 600,
+                            height: 1.4,
+                          ),
+                          FxText.sh2(
+                            widget.permitData['permit_excuse'],
+                            height: 1.4,
+                            fontWeight: 500,
+                          ),
                         ],
                       ),
                     ),
@@ -172,9 +225,15 @@ class _PermitPanelState extends State<PermitPanel> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Container(
-                            padding: FxSpacing.only(top: 16, bottom: 8,),
+                            padding: FxSpacing.only(
+                              top: 16,
+                              bottom: 8,
+                            ),
                             child: Center(
-                              child: Image.network(widget.permitData['user_signature'], width: MediaQuery.of(context).size.width / 2,),
+                              child: Image.network(
+                                widget.permitData['user_signature'],
+                                width: MediaQuery.of(context).size.width / 2,
+                              ),
                             ),
                           ),
                         ],
@@ -184,7 +243,6 @@ class _PermitPanelState extends State<PermitPanel> {
                   ),
 
                   ..._superiorSignature(),
-
                 ],
               ),
             ],
@@ -195,7 +253,10 @@ class _PermitPanelState extends State<PermitPanel> {
   }
 
   List<ExpansionPanel> _superiorSignature() {
-    if (widget.permitData['status'] == 'READY' || widget.permitData['status'] == 'CHECKED') {
+    if (widget.permitData['status'] == 'PENDING2' ||
+        widget.permitData['status'] == 'READY' ||
+        widget.permitData['status'] == 'CHECKED' ||
+        widget.permitData['status'] == 'REJECTED') {
       return <ExpansionPanel>[
         ExpansionPanel(
           canTapOnHeader: true,
@@ -215,17 +276,39 @@ class _PermitPanelState extends State<PermitPanel> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                FxText.sh1('Nama', fontWeight: 600, height: 1.4,),
-                FxText.sh2(widget.permitData['superior']['name'], height: 1.4, fontWeight: 500,),
+                FxText.sh1(
+                  'Nama',
+                  fontWeight: 600,
+                  height: 1.4,
+                ),
+                FxText.sh2(
+                  widget.permitData['superior']['name'],
+                  height: 1.4,
+                  fontWeight: 500,
+                ),
                 Padding(
                   padding: EdgeInsets.only(top: 8),
                 ),
-                FxText.sh1('NIK', fontWeight: 600, height: 1.4,),
-                FxText.sh2(widget.permitData['superior']['nik'], height: 1.4, fontWeight: 500,),
+                FxText.sh1(
+                  'NIK',
+                  fontWeight: 600,
+                  height: 1.4,
+                ),
+                FxText.sh2(
+                  widget.permitData['superior']['nik'],
+                  height: 1.4,
+                  fontWeight: 500,
+                ),
                 Container(
-                  padding: FxSpacing.only(top: 16, bottom: 8,),
+                  padding: FxSpacing.only(
+                    top: 16,
+                    bottom: 8,
+                  ),
                   child: Center(
-                    child: Image.network(widget.permitData['superior_signature'], width: MediaQuery.of(context).size.width / 2,),
+                    child: Image.network(
+                      widget.permitData['superior_signature'],
+                      width: MediaQuery.of(context).size.width / 2,
+                    ),
                   ),
                 ),
               ],
@@ -234,8 +317,7 @@ class _PermitPanelState extends State<PermitPanel> {
           isExpanded: _dataExpansionPanel[3],
         ),
       ];
-    }
-    else {
+    } else {
       return <ExpansionPanel>[];
     }
   }
@@ -249,7 +331,23 @@ class _PermitPanelState extends State<PermitPanel> {
           shape: BadgeShape.square,
           badgeColor: Colors.yellow,
           borderRadius: BorderRadius.circular(8),
-          badgeContent: Text('Menunggu TTD Atasan', style: TextStyle(color: Colors.black),),
+          badgeContent: Text(
+            'Menunggu TTD Atasan',
+            style: TextStyle(color: Colors.black),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        );
+        break;
+      case 'PENDING2':
+        child = Badge(
+          toAnimate: false,
+          shape: BadgeShape.square,
+          badgeColor: Colors.yellow,
+          borderRadius: BorderRadius.circular(8),
+          badgeContent: Text(
+            'Menunggu TTD HRD',
+            style: TextStyle(color: Colors.black),
+          ),
           padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         );
         break;
@@ -259,7 +357,10 @@ class _PermitPanelState extends State<PermitPanel> {
           shape: BadgeShape.square,
           badgeColor: Colors.green,
           borderRadius: BorderRadius.circular(8),
-          badgeContent: Text('Data Lengkap', style: TextStyle(color: Colors.white),),
+          badgeContent: Text(
+            'Data Lengkap',
+            style: TextStyle(color: Colors.white),
+          ),
           padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         );
         break;
@@ -269,7 +370,49 @@ class _PermitPanelState extends State<PermitPanel> {
           shape: BadgeShape.square,
           badgeColor: Colors.blue,
           borderRadius: BorderRadius.circular(8),
-          badgeContent: Text('Sudah Dicek', style: TextStyle(color: Colors.white),),
+          badgeContent: Text(
+            'Sudah Dicek',
+            style: TextStyle(color: Colors.white),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        );
+        break;
+      case 'CANCELED':
+        child = Badge(
+          toAnimate: false,
+          shape: BadgeShape.square,
+          badgeColor: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+          badgeContent: Text(
+            'Dibatalkan',
+            style: TextStyle(color: Colors.white),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        );
+        break;
+      case 'EXPIRED':
+        child = Badge(
+          toAnimate: false,
+          shape: BadgeShape.square,
+          badgeColor: Colors.red,
+          borderRadius: BorderRadius.circular(8),
+          badgeContent: Text(
+            'Kadaluwarsa',
+            style: TextStyle(color: Colors.white),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        );
+        break;
+      case 'REJECTED':
+        child = Badge(
+          toAnimate: false,
+          shape: BadgeShape.square,
+          badgeColor: Colors.red,
+          borderRadius: BorderRadius.circular(8),
+          badgeContent: Text(
+            'Ditolak',
+            style: TextStyle(color: Colors.white),
+          ),
           padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         );
         break;
@@ -279,7 +422,10 @@ class _PermitPanelState extends State<PermitPanel> {
           shape: BadgeShape.square,
           badgeColor: Colors.red,
           borderRadius: BorderRadius.circular(8),
-          badgeContent: Text('ERROR', style: TextStyle(color: Colors.white),),
+          badgeContent: Text(
+            'ERROR',
+            style: TextStyle(color: Colors.white),
+          ),
           padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         );
         break;

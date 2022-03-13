@@ -5,6 +5,7 @@ import 'package:flutx/flutx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../pages/create_permit.dart';
 import './single_drawer_item.dart';
+import '../pages/signed_by_me.dart';
 
 class RegularUserDrawer extends StatefulWidget {
   final Function() pageRefresher;
@@ -94,6 +95,13 @@ class _RegularUserDrawerState extends State<RegularUserDrawer> {
                         action: _createHandler,
                       ),
                       SingleDrawerItem(
+                        selectedPageCode: _selectedPageCode, 
+                        iconData: Icons.draw, 
+                        title: 'Ditandatangani Saya', 
+                        pageCode: 'signedByMe', 
+                        action: _openSignedByMe
+                      ),
+                      SingleDrawerItem(
                         selectedPageCode: _selectedPageCode,
                         iconData: Icons.logout, 
                         title: 'Logout',
@@ -112,6 +120,17 @@ class _RegularUserDrawerState extends State<RegularUserDrawer> {
         ),
       ),
     );
+  }
+
+  _openSignedByMe() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (BuildContext context) => SignedByMe()
+      )
+    ).then((_) {
+      Navigator.pop(context);
+    });
   }
 
   _createHandler() async {

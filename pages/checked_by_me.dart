@@ -1,28 +1,29 @@
 import 'dart:convert';
-import 'package:epermits/network/sanctum_api.dart';
+
 import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
+import '../network/sanctum_api.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:epermits/pages/view_permit.dart';
 
 getPermits({page = 1}) async {
   var res = await SanctumApi().sendGet(
-    apiURL: 'permit-index/signed-by-me?page=' + page.toString(),
+    apiURL: 'permit-index/checked-by-me?page=' + page.toString(),
     additionalHeaders: {},
-    withToken: true,
+    withToken: true
   );
   var body = jsonDecode(res.body);
   return body;
 }
 
-class SignedByMe extends StatefulWidget {
+class CheckedByMe extends StatefulWidget {
   @override
-  State<SignedByMe> createState() => _SignedByMeState();
+  State<CheckedByMe> createState() => _CheckedByMeState();
 }
 
-class _SignedByMeState extends State<SignedByMe> {
+class _CheckedByMeState extends State<CheckedByMe> {
   final PagingController _pagingController = PagingController(firstPageKey: 1);
 
   @override 
@@ -59,7 +60,6 @@ class _SignedByMeState extends State<SignedByMe> {
       builderDelegate: PagedChildBuilderDelegate(
         itemBuilder: (context, item, index) {
           Map<String, dynamic> data = item as Map<String, dynamic>;
-          // return Text(item.toString());
           return InkWell(
             onTap: () {
               Navigator.push(
@@ -105,15 +105,15 @@ class _SignedByMeState extends State<SignedByMe> {
         children: [
           Container(
             child: Image(
-              image: AssetImage('./assets/images/not-available.png'),
-              height: MediaQuery.of(context).size.width * 0.6,
-              width: MediaQuery.of(context).size.width * 0.6
+              image: AssetImage('./assets/images/empty.png'),
+              height: MediaQuery.of(context).size.width * 0.5,
+              width: MediaQuery.of(context).size.width * 0.6,
             ),
           ),
           Container(
             margin: EdgeInsets.only(top: 24),
             child: FxText.sh1(
-              'Halaman Tidak Tersedia',
+              'Belum ada data',
               color: AppTheme.theme.colorScheme.onBackground,
               fontWeight: 600,
               letterSpacing: 0,
@@ -132,7 +132,7 @@ class _SignedByMeState extends State<SignedByMe> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: AppTheme.theme.colorScheme.background,
-        title: FxText.sh1('Ditandatangani Saya', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary),
+        title: FxText.sh1('Sudah Dicek', fontWeight: 600, color: AppTheme.theme.colorScheme.onPrimary,),
         iconTheme: IconThemeData(
           color: AppTheme.theme.colorScheme.onPrimary,
         ),

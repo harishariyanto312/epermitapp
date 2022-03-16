@@ -1,8 +1,10 @@
+import 'package:epermits/pages/checked_by_me.dart';
 import 'package:epermits/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './single_drawer_item.dart';
+import '../pages/signed_by_me.dart';
 
 class SecurityDrawer extends StatefulWidget {
   final Function() logoutHandler;
@@ -82,6 +84,13 @@ class _SecurityDrawerState extends State<SecurityDrawer> {
                     padding: FxSpacing.all(0),
                     children: <Widget>[
                       SingleDrawerItem(
+                        selectedPageCode: _selectedPageCode,
+                        iconData: Icons.check,
+                        title: 'Sudah Dicek',
+                        pageCode: 'checked',
+                        action: _openCheckedByMe,
+                      ),
+                      SingleDrawerItem(
                         selectedPageCode: _selectedPageCode, 
                         iconData: Icons.logout, 
                         title: 'Logout',
@@ -102,5 +111,16 @@ class _SecurityDrawerState extends State<SecurityDrawer> {
       ),
 
     );
+  }
+
+  _openCheckedByMe() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (BuildContext context) => CheckedByMe()
+      )
+    ).then((_) {
+      Navigator.pop(context);
+    });
   }
 }

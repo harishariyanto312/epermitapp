@@ -250,6 +250,7 @@ class _HomeSecurityState extends State<HomeSecurity> {
       var permitData = await _getPermit(permitID);
 
       if (permitData['errors'] == null) {
+        inputPermitID.text = '';
         _permitFound(permitData['result']['permit']);
       }
       else {

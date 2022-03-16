@@ -138,7 +138,7 @@ class _HomeState extends State<Home> {
           ),
         ),
         newPageProgressIndicatorBuilder: (_) => Container(
-          padding: EdgeInsets.only(top: 16),
+          padding: EdgeInsets.symmetric(vertical: 16),
           child: Center(
             child: SpinKitDoubleBounce(
               color: AppTheme.theme.colorScheme.primary,

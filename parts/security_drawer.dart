@@ -114,13 +114,12 @@ class _SecurityDrawerState extends State<SecurityDrawer> {
   }
 
   _openCheckedByMe() {
+    Navigator.pop(context);
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (BuildContext context) => CheckedByMe()
       )
-    ).then((_) {
-      Navigator.pop(context);
-    });
+    );
   }
 }

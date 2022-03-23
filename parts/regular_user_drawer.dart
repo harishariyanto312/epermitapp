@@ -123,14 +123,13 @@ class _RegularUserDrawerState extends State<RegularUserDrawer> {
   }
 
   _openSignedByMe() {
+    Navigator.pop(context);
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (BuildContext context) => SignedByMe()
       )
-    ).then((_) {
-      Navigator.pop(context);
-    });
+    );
   }
 
   _createHandler() async {
